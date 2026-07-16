@@ -52,7 +52,7 @@ ADMIN_EMAILS_JS = "['jasim28v@gmail.com']"
 DICEBEAR_URL = "https://api.dicebear.com/7.x/big-smile/svg"
 
 # 💎 Cyan Luxury Palette
-BLUE_COLORS_JS = """[
+CYAN_COLORS_JS = """[
     "linear-gradient(135deg, #0a1628, #0f2847, #06b6d4)",
     "linear-gradient(135deg, #020b14, #0a1628, #0891b2)",
     "linear-gradient(135deg, #0f2847, #0891b2, #22d3ee)",
@@ -66,22 +66,29 @@ BLUE_COLORS_JS = """[
 # ═══════════════════════════════════════════════════════════
 
 TOTAL_LINES = 0
+ALL_FILES = {}  # تخزين المحتوى في الذاكرة بدلاً من الملفات
 
-def write(filename, content):
-    """حفظ ملف وحساب عدد الأسطر"""
+def save_file(filename, content):
+    """تخزين محتوى الملف في الذاكرة فقط"""
     global TOTAL_LINES
-    os.makedirs(os.path.dirname(filename) if os.path.dirname(filename) else '.', exist_ok=True)
-    with open(filename, 'w', encoding='utf-8') as f:
-        f.write(content)
+    ALL_FILES[filename] = content
     lines = content.count('\n') + 1
     TOTAL_LINES += lines
-    print(f"  ✅ {filename} ({lines} سطر)")
+    print(f"  ✅ {filename} ({lines} سطر) - جاهز في الذاكرة")
 
 def section(title):
     """طباعة عنوان القسم"""
     print(f"\n{'='*60}")
     print(f"  💎 {title}")
     print(f"{'='*60}")
+
+def write_files_to_disk():
+    """كتابة جميع الملفات للقرص عند الطلب فقط"""
+    for filename, content in ALL_FILES.items():
+        os.makedirs(os.path.dirname(filename) if os.path.dirname(filename) else '.', exist_ok=True)
+        with open(filename, 'w', encoding='utf-8') as f:
+            f.write(content)
+    print(f"\n  ✅ تم إنشاء {len(ALL_FILES)} ملف بنجاح!")
 
 # ═══════════════════════════════════════════════════════════
 # 💎 1. firebase-config.js
@@ -115,7 +122,7 @@ const UPLOAD_PRESET = "{UPLOAD_PRESET}";
 // 💎 SIMRK Settings
 const ADMIN_EMAILS = {ADMIN_EMAILS_JS};
 const DICEBEAR_URL = "{DICEBEAR_URL}";
-const COVER_COLORS = {BLUE_COLORS_JS};
+const COVER_COLORS = {CYAN_COLORS_JS};
 
 // 💎 App Info
 const APP_NAME = "SIMRK";
@@ -127,7 +134,7 @@ console.log('💎 %c'+APP_NAME+' v'+APP_VERSION+' Ready ✨', 'color: #06b6d4; f
 """
 
 # ═══════════════════════════════════════════════════════════
-# 💎 2. auth.html - تسجيل الدخول والاشتراك
+# 💎 2. auth.html - تسجيل الدخول والاشتراك (Cyan Luxury)
 # ═══════════════════════════════════════════════════════════
 
 def build_auth():
@@ -343,7 +350,7 @@ def build_auth():
 </html>"""
 
 # ═══════════════════════════════════════════════════════════
-# 💎 3. index.html - الرئيسية (مع أنيميشن الفيديو)
+# 💎 3. index.html - الرئيسية (مع أنيميشن الفيديو الجديد)
 # ═══════════════════════════════════════════════════════════
 
 def build_index():
@@ -1199,7 +1206,7 @@ def build_index():
 </html>"""
 
 # ═══════════════════════════════════════════════════════════
-# 💎 4. profile.html - Cyan Luxury (مع نفس الأنيميشن)
+# 💎 4. profile.html
 # ═══════════════════════════════════════════════════════════
 
 def build_profile():
@@ -1284,39 +1291,17 @@ def build_profile():
         .empty-state i{font-size:48px;color:var(--accent);margin-bottom:12px;display:block}
         .toast-msg{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(2,11,20,0.95);padding:12px 24px;border-radius:30px;z-index:300;border:1px solid rgba(6,182,212,0.3);font-size:13px;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,0.4)}
         .toast-msg.show{opacity:1}
-
-        /* 💎 PLAYER & LIGHTBOX */
-        .fullscreen-player {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: #000; z-index: 9999; display: flex; align-items: center;
-            justify-content: center; opacity: 0; pointer-events: none;
-            transition: opacity 0.3s ease; flex-direction: column;
-        }
-        .fullscreen-player.active { opacity: 1; pointer-events: auto; }
-        .fullscreen-player video { max-width: 100%; max-height: 85vh; object-fit: contain; cursor: pointer; }
-        .player-controls {
-            position: absolute; bottom: 100px; left: 20px; right: 20px;
-            display: flex; align-items: center; justify-content: space-between;
-            background: rgba(0,0,0,0.6); backdrop-filter: blur(20px);
-            border-radius: 50px; padding: 10px 20px;
-            border: 1px solid rgba(6,182,212,0.3); z-index: 10000; color: #fff; gap: 12px; flex-wrap: wrap;
-        }
-        .player-controls button { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; transition: color 0.2s; padding: 5px; }
-        .player-controls button:hover { color: #67e8f9; }
-        .progress-wrap { flex: 1; display: flex; align-items: center; gap: 8px; min-width: 100px; }
-        .progress-bar { flex: 1; height: 4px; background: rgba(255,255,255,0.2); border-radius: 4px; cursor: pointer; position: relative; }
-        .progress-fill { height: 100%; background: linear-gradient(90deg, #0891b2, #22d3ee); border-radius: 4px; width: 0%; }
-        .close-player {
-            position: absolute; top: 20px; left: 20px;
-            background: rgba(0,0,0,0.5); backdrop-filter: blur(10px);
-            border: 1px solid rgba(6,182,212,0.4); color: #fff;
-            width: 44px; height: 44px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; font-size: 20px; z-index: 10001; transition: all 0.3s;
-        }
-        .close-player:hover { background: rgba(6,182,212,0.3); box-shadow: 0 0 20px rgba(6,182,212,0.5); }
-
-        /* ADMIN */
+        .fullscreen-player{position:fixed;top:0;left:0;width:100vw;height:100vh;background:#000;z-index:9999;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.3s ease;flex-direction:column}
+        .fullscreen-player.active{opacity:1;pointer-events:auto}
+        .fullscreen-player video{max-width:100%;max-height:85vh;object-fit:contain;cursor:pointer}
+        .player-controls{position:absolute;bottom:100px;left:20px;right:20px;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,0.6);backdrop-filter:blur(20px);border-radius:50px;padding:10px 20px;border:1px solid rgba(6,182,212,0.3);z-index:10000;color:#fff;gap:12px;flex-wrap:wrap}
+        .player-controls button{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;transition:color 0.2s;padding:5px}
+        .player-controls button:hover{color:#67e8f9}
+        .progress-wrap{flex:1;display:flex;align-items:center;gap:8px;min-width:100px}
+        .progress-bar{flex:1;height:4px;background:rgba(255,255,255,0.2);border-radius:4px;cursor:pointer;position:relative}
+        .progress-fill{height:100%;background:linear-gradient(90deg, #0891b2, #22d3ee);border-radius:4px;width:0%}
+        .close-player{position:absolute;top:20px;left:20px;background:rgba(0,0,0,0.5);backdrop-filter:blur(10px);border:1px solid rgba(6,182,212,0.4);color:#fff;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;z-index:10001;transition:all 0.3s}
+        .close-player:hover{background:rgba(6,182,212,0.3);box-shadow:0 0 20px rgba(6,182,212,0.5)}
         .admin-panel{background:transparent;border:none;padding:0 8px;margin:0 8px 100px 8px;font-family:'Segoe UI',sans-serif}
         .admin-panel h3{color:#67e8f9;font-size:20px;margin-bottom:20px;display:flex;align-items:center;gap:10px;font-weight:700}
         .admin-stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:24px}
@@ -1719,7 +1704,7 @@ def build_profile():
 </html>"""
 
 # ═══════════════════════════════════════════════════════════
-# 💎 5. upload.html - Cyan Luxury
+# 💎 5. upload.html
 # ═══════════════════════════════════════════════════════════
 
 def build_upload():
@@ -1790,7 +1775,7 @@ def build_upload():
 </html>"""
 
 # ═══════════════════════════════════════════════════════════
-# 💎 6. chat.html - Cyan Luxury
+# 💎 6. chat.html
 # ═══════════════════════════════════════════════════════════
 
 def build_chat():
@@ -1830,18 +1815,13 @@ def build_chat():
         @keyframes spin{to{transform:rotate(360deg)}}
         .toast-msg{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(2,11,20,0.95);padding:10px 22px;border-radius:30px;z-index:300;border:1px solid rgba(6,182,212,0.3);font-size:13px;opacity:0;transition:opacity 0.3s;pointer-events:none}
         .toast-msg.show{opacity:1}
-        .image-lightbox {
-            position: fixed; inset: 0;
-            background: rgba(0,0,0,0.96); backdrop-filter: blur(30px);
-            z-index: 9999; display: flex; align-items: center; justify-content: center;
-            opacity: 0; pointer-events: none; transition: opacity 0.3s ease; flex-direction: column;
-        }
-        .image-lightbox.active { opacity: 1; pointer-events: auto; }
-        .image-lightbox img { max-width: 95vw; max-height: 80vh; border-radius: 16px; object-fit: contain; box-shadow: 0 20px 60px rgba(6,182,212,0.2); border: 1px solid rgba(6,182,212,0.15); }
-        .lightbox-actions { display: flex; gap: 20px; margin-top: 20px; z-index: 10000; }
-        .lightbox-actions button { background: rgba(6,182,212,0.15); border: 1px solid rgba(6,182,212,0.3); color: #fff; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; transition: all 0.3s; }
-        .lightbox-actions button:hover { background: rgba(6,182,212,0.4); box-shadow: 0 0 25px rgba(6,182,212,0.4); }
-        .close-lightbox { position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); border: 1px solid rgba(6,182,212,0.4); color: #fff; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; z-index: 10001; }
+        .image-lightbox{position:fixed;inset:0;background:rgba(0,0,0,0.96);backdrop-filter:blur(30px);z-index:9999;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.3s ease;flex-direction:column}
+        .image-lightbox.active{opacity:1;pointer-events:auto}
+        .image-lightbox img{max-width:95vw;max-height:80vh;border-radius:16px;object-fit:contain;box-shadow:0 20px 60px rgba(6,182,212,0.2);border:1px solid rgba(6,182,212,0.15)}
+        .lightbox-actions{display:flex;gap:20px;margin-top:20px;z-index:10000}
+        .lightbox-actions button{background:rgba(6,182,212,0.15);border:1px solid rgba(6,182,212,0.3);color:#fff;width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;transition:all 0.3s}
+        .lightbox-actions button:hover{background:rgba(6,182,212,0.4);box-shadow:0 0 25px rgba(6,182,212,0.4)}
+        .close-lightbox{position:absolute;top:20px;left:20px;background:rgba(0,0,0,0.5);backdrop-filter:blur(10px);border:1px solid rgba(6,182,212,0.4);color:#fff;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;z-index:10001}
     </style>
 </head>
 <body>
@@ -1861,22 +1841,21 @@ def build_chat():
 <script src="firebase-config.js"></script>
 <script>
     let currentUser=null,allUsers={},chatUserId=null;
-    function openLightbox(url) { const lb = document.getElementById('imageLightbox'); const img = document.getElementById('lightboxImage'); lb.classList.add('active'); img.src = url; img.setAttribute('data-url', url); }
-    function closeLightbox() { const lb = document.getElementById('imageLightbox'); lb.classList.remove('active'); const img = document.getElementById('lightboxImage'); img.src = ''; }
-    function downloadImage() { const url = document.getElementById('lightboxImage').getAttribute('data-url'); if (url) { const a = document.createElement('a'); a.href = url; a.download = 'image.jpg'; a.click(); } }
-    function copyImageLink() { const url = document.getElementById('lightboxImage').getAttribute('data-url'); if (url) { navigator.clipboard.writeText(url).then(() => { const t = document.getElementById('toastMsg'); t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000); }); } }
-
-    auth.onAuthStateChanged(async u=>{if(!u){window.location.href='auth.html';return}currentUser=u;const us=await db.ref('users').once('value');allUsers=us.val()||{};document.getElementById('loader').style.display='none';const params = new URLSearchParams(window.location.search);const targetUid = params.get('uid');if(targetUid){openChat(targetUid);}else{showConvs();}setInterval(()=>{if(currentUser)db.ref('users/'+currentUser.uid+'/lastSeen').set(Date.now());},60000);});
-    function showConvs(){document.getElementById('chatView').style.display='none';document.getElementById('convView').style.display='flex';chatUserId=null;loadConvs();}
-    async function loadConvs(){const cl=document.getElementById('convList');cl.innerHTML='';const snap=await db.ref('private_messages').once('value');const all=snap.val()||{};const found=new Set();Object.keys(all).forEach(cid=>{const[u1,u2]=cid.split('_');const other=u1===currentUser.uid?u2:u2===currentUser.uid?u1:null;if(other&&!found.has(other)&&allUsers[other])found.add(other);});if(!found.size){cl.innerHTML='<div style="text-align:center;opacity:0.5;padding:40px">لا محادثات</div>';return}found.forEach(uid=>{const u=allUsers[uid];const d=document.createElement('div');d.className='conv-item';d.innerHTML=`<div class="chat-avatar"><img src="${u?.avatarUrl||(DICEBEAR_URL+'?seed='+uid)}"></div><div><div style="font-weight:600">@${u?.username||'?'} ${u?.isVerified?'<span style="color:#67e8f9;font-size:12px;"><i class="fas fa-check-circle"></i></span>':''}</div></div>`;d.onclick=()=>openChat(uid);cl.appendChild(d);});}
-    async function openChat(uid){chatUserId=uid;const u=allUsers[uid];document.getElementById('chatName').innerText='@'+(u?.username||'مستخدم');document.getElementById('chatAvatar').innerHTML=`<img src="${u?.avatarUrl||(DICEBEAR_URL+'?seed='+uid)}">`;document.getElementById('convView').style.display='none';document.getElementById('chatView').style.display='flex';db.ref('presence/'+uid).on('value',s=>{const online=s.val();document.getElementById('chatOnline').innerHTML=online?'<span class="online-indicator"></span> نشط الآن':'آخر ظهور: '+formatTime(u?.lastSeen);});await loadMsgs();}
-    function getChatId(){return [currentUser.uid,chatUserId].sort().join('_');}
-    async function loadMsgs(){const ml=document.getElementById('msgsList');ml.innerHTML='';if(!chatUserId)return;const snap=await db.ref('private_messages/'+getChatId()).once('value');const ms=snap.val()||{};Object.values(ms).sort((a,b)=>a.timestamp-b.timestamp).forEach(m=>{const sent=m.senderId===currentUser.uid;const d=document.createElement('div');d.className='bubble '+(sent?'sent':'received');d.innerHTML=`${m.type==='image'?`<img src="${m.imageUrl}" onclick="openLightbox('${m.imageUrl}')">`:m.text}<div class="time">${new Date(m.timestamp).toLocaleTimeString('ar-SA')}</div>`;ml.appendChild(d);});ml.scrollTop=ml.scrollHeight;}
-    async function sendMsg(){const inp=document.getElementById('msgInput');const txt=inp.value.trim();if(!txt||!chatUserId)return;await db.ref('private_messages/'+getChatId()).push({senderId:currentUser.uid,text:txt,type:'text',timestamp:Date.now()});inp.value='';await loadMsgs();}
-    async function sendImage(){if(!chatUserId)return;const inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.onchange=async(e)=>{const file=e.target.files[0];if(!file)return;showToast('⏳ جاري رفع الصورة...');const fd=new FormData();fd.append('file',file);fd.append('upload_preset',UPLOAD_PRESET);const res=await fetch('https://api.cloudinary.com/v1_1/'+CLOUD_NAME+'/image/upload',{method:'POST',body:fd});const data=await res.json();if(data.secure_url){await db.ref('private_messages/'+getChatId()).push({senderId:currentUser.uid,type:'image',imageUrl:data.secure_url,timestamp:Date.now()});await loadMsgs();}};inp.click();}
-    async function copyChat(){if(!chatUserId)return;const snap=await db.ref('private_messages/'+getChatId()).once('value');const msgs=snap.val()||{};let text='💬 محادثة SIMRK\\n'+'─'.repeat(30)+'\\n';Object.values(msgs).sort((a,b)=>a.timestamp-b.timestamp).forEach(m=>{const sender=m.senderId===currentUser.uid?'أنت':(allUsers[m.senderId]?.username||'مستخدم');const content=m.type==='image'?'[صورة]':m.text;const time=new Date(m.timestamp).toLocaleTimeString('ar-SA');text+=`\\n${sender} (${time}):\\n${content}\\n`;});try{await navigator.clipboard.writeText(text);}catch(e){const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}showToast('✅ تم نسخ المحادثة');}
-    function showToast(msg){const toast=document.getElementById('toastMsg');toast.innerText=msg;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2500);}
-    function formatTime(ts){if(!ts)return'غير معروف';const diff=Date.now()-ts;const mins=Math.floor(diff/60000);const hours=Math.floor(diff/3600000);const days=Math.floor(diff/86400000);if(mins<1)return'الآن';if(mins<60)return'منذ '+mins+' دقيقة';if(hours<24)return'منذ '+hours+' ساعة';if(days<7)return'منذ '+days+' يوم';return new Date(ts).toLocaleDateString('ar-SA');}
+    function openLightbox(url){const lb=document.getElementById('imageLightbox');const img=document.getElementById('lightboxImage');lb.classList.add('active');img.src=url;img.setAttribute('data-url',url)}
+    function closeLightbox(){const lb=document.getElementById('imageLightbox');lb.classList.remove('active');const img=document.getElementById('lightboxImage');img.src=''}
+    function downloadImage(){const url=document.getElementById('lightboxImage').getAttribute('data-url');if(url){const a=document.createElement('a');a.href=url;a.download='image.jpg';a.click()}}
+    function copyImageLink(){const url=document.getElementById('lightboxImage').getAttribute('data-url');if(url){navigator.clipboard.writeText(url).then(()=>{const t=document.getElementById('toastMsg');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000)})}}
+    auth.onAuthStateChanged(async u=>{if(!u){window.location.href='auth.html';return}currentUser=u;const us=await db.ref('users').once('value');allUsers=us.val()||{};document.getElementById('loader').style.display='none';const params=new URLSearchParams(window.location.search);const targetUid=params.get('uid');if(targetUid){openChat(targetUid)}else{showConvs()}setInterval(()=>{if(currentUser)db.ref('users/'+currentUser.uid+'/lastSeen').set(Date.now())},60000)});
+    function showConvs(){document.getElementById('chatView').style.display='none';document.getElementById('convView').style.display='flex';chatUserId=null;loadConvs()}
+    async function loadConvs(){const cl=document.getElementById('convList');cl.innerHTML='';const snap=await db.ref('private_messages').once('value');const all=snap.val()||{};const found=new Set();Object.keys(all).forEach(cid=>{const[u1,u2]=cid.split('_');const other=u1===currentUser.uid?u2:u2===currentUser.uid?u1:null;if(other&&!found.has(other)&&allUsers[other])found.add(other)});if(!found.size){cl.innerHTML='<div style="text-align:center;opacity:0.5;padding:40px">لا محادثات</div>';return}found.forEach(uid=>{const u=allUsers[uid];const d=document.createElement('div');d.className='conv-item';d.innerHTML=`<div class="chat-avatar"><img src="${u?.avatarUrl||(DICEBEAR_URL+'?seed='+uid)}"></div><div><div style="font-weight:600">@${u?.username||'?'} ${u?.isVerified?'<span style="color:#67e8f9;font-size:12px;"><i class="fas fa-check-circle"></i></span>':''}</div></div>`;d.onclick=()=>openChat(uid);cl.appendChild(d)})}
+    async function openChat(uid){chatUserId=uid;const u=allUsers[uid];document.getElementById('chatName').innerText='@'+(u?.username||'مستخدم');document.getElementById('chatAvatar').innerHTML=`<img src="${u?.avatarUrl||(DICEBEAR_URL+'?seed='+uid)}">`;document.getElementById('convView').style.display='none';document.getElementById('chatView').style.display='flex';db.ref('presence/'+uid).on('value',s=>{const online=s.val();document.getElementById('chatOnline').innerHTML=online?'<span class="online-indicator"></span> نشط الآن':'آخر ظهور: '+formatTime(u?.lastSeen)});await loadMsgs()}
+    function getChatId(){return [currentUser.uid,chatUserId].sort().join('_')}
+    async function loadMsgs(){const ml=document.getElementById('msgsList');ml.innerHTML='';if(!chatUserId)return;const snap=await db.ref('private_messages/'+getChatId()).once('value');const ms=snap.val()||{};Object.values(ms).sort((a,b)=>a.timestamp-b.timestamp).forEach(m=>{const sent=m.senderId===currentUser.uid;const d=document.createElement('div');d.className='bubble '+(sent?'sent':'received');d.innerHTML=`${m.type==='image'?`<img src="${m.imageUrl}" onclick="openLightbox('${m.imageUrl}')">`:m.text}<div class="time">${new Date(m.timestamp).toLocaleTimeString('ar-SA')}</div>`;ml.appendChild(d)});ml.scrollTop=ml.scrollHeight}
+    async function sendMsg(){const inp=document.getElementById('msgInput');const txt=inp.value.trim();if(!txt||!chatUserId)return;await db.ref('private_messages/'+getChatId()).push({senderId:currentUser.uid,text:txt,type:'text',timestamp:Date.now()});inp.value='';await loadMsgs()}
+    async function sendImage(){if(!chatUserId)return;const inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.onchange=async(e)=>{const file=e.target.files[0];if(!file)return;showToast('⏳ جاري رفع الصورة...');const fd=new FormData();fd.append('file',file);fd.append('upload_preset',UPLOAD_PRESET);const res=await fetch('https://api.cloudinary.com/v1_1/'+CLOUD_NAME+'/image/upload',{method:'POST',body:fd});const data=await res.json();if(data.secure_url){await db.ref('private_messages/'+getChatId()).push({senderId:currentUser.uid,type:'image',imageUrl:data.secure_url,timestamp:Date.now()});await loadMsgs()}};inp.click()}
+    async function copyChat(){if(!chatUserId)return;const snap=await db.ref('private_messages/'+getChatId()).once('value');const msgs=snap.val()||{};let text='💬 محادثة SIMRK\\n'+'─'.repeat(30)+'\\n';Object.values(msgs).sort((a,b)=>a.timestamp-b.timestamp).forEach(m=>{const sender=m.senderId===currentUser.uid?'أنت':(allUsers[m.senderId]?.username||'مستخدم');const content=m.type==='image'?'[صورة]':m.text;const time=new Date(m.timestamp).toLocaleTimeString('ar-SA');text+=`\\n${sender} (${time}):\\n${content}\\n`});try{await navigator.clipboard.writeText(text)}catch(e){const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta)}showToast('✅ تم نسخ المحادثة')}
+    function showToast(msg){const toast=document.getElementById('toastMsg');toast.innerText=msg;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2500)}
+    function formatTime(ts){if(!ts)return'غير معروف';const diff=Date.now()-ts;const mins=Math.floor(diff/60000);const hours=Math.floor(diff/3600000);const days=Math.floor(diff/86400000);if(mins<1)return'الآن';if(mins<60)return'منذ '+mins+' دقيقة';if(hours<24)return'منذ '+hours+' ساعة';if(days<7)return'منذ '+days+' يوم';return new Date(ts).toLocaleDateString('ar-SA')}
 </script>
 </body>
 </html>"""
@@ -2034,20 +2013,20 @@ jobs:
           APK_UNSIGNED="android-project/app/build/outputs/apk/release/app-release-unsigned.apk"
           APK_SIGNED="SIMRK-Release.apk"
           
-          keytool -genkey -v \
-            -keystore release-key.jks \
-            -alias simrk \
-            -keyalg RSA \
-            -keysize 2048 \
-            -validity 10000 \
-            -storepass simrk2026 \
-            -keypass simrk2026 \
+          keytool -genkey -v \\
+            -keystore release-key.jks \\
+            -alias simrk \\
+            -keyalg RSA \\
+            -keysize 2048 \\
+            -validity 10000 \\
+            -storepass simrk2026 \\
+            -keypass simrk2026 \\
             -dname "CN=SIMRK, OU=App, O=SIMRK, L=World"
           
-          $ANDROID_HOME/build-tools/34.0.0/apksigner sign \
-            --ks release-key.jks \
-            --ks-pass pass:simrk2026 \
-            --out $APK_SIGNED \
+          $ANDROID_HOME/build-tools/34.0.0/apksigner sign \\
+            --ks release-key.jks \\
+            --ks-pass pass:simrk2026 \\
+            --out $APK_SIGNED \\
             $APK_UNSIGNED
             
       - name: 📤 Upload to Release
@@ -2087,7 +2066,7 @@ def build_android_project():
     """توليد مشروع أندرويد Native كامل"""
     
     # build.gradle (Project)
-    write("android-project/build.gradle", """buildscript {
+    save_file("android-project/build.gradle", """buildscript {
     repositories { google(); mavenCentral() }
     dependencies { classpath 'com.android.tools.build:gradle:8.2.0' }
 }
@@ -2095,16 +2074,16 @@ allprojects { repositories { google(); mavenCentral() } }
 task clean(type: Delete) { delete rootProject.buildDir }""")
 
     # settings.gradle
-    write("android-project/settings.gradle", """rootProject.name = "SIMRK"
+    save_file("android-project/settings.gradle", """rootProject.name = "SIMRK"
 include ':app'""")
 
     # gradle.properties
-    write("android-project/gradle.properties", """org.gradle.jvmargs=-Xmx2048m
+    save_file("android-project/gradle.properties", """org.gradle.jvmargs=-Xmx2048m
 android.useAndroidX=true
 android.enableJetifier=true""")
 
     # app/build.gradle
-    write("android-project/app/build.gradle", """plugins { id 'com.android.application' }
+    save_file("android-project/app/build.gradle", """plugins { id 'com.android.application' }
 android {
     namespace 'com.simrk.app'
     compileSdk 34
@@ -2122,7 +2101,7 @@ dependencies {
 }""")
 
     # AndroidManifest.xml
-    write("android-project/app/src/main/AndroidManifest.xml", """<?xml version="1.0" encoding="utf-8"?>
+    save_file("android-project/app/src/main/AndroidManifest.xml", """<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -2149,7 +2128,7 @@ dependencies {
 </manifest>""")
 
     # MainActivity.java
-    write("android-project/app/src/main/java/com/simrk/app/MainActivity.java", """package com.simrk.app;
+    save_file("android-project/app/src/main/java/com/simrk/app/MainActivity.java", """package com.simrk.app;
 import android.os.Bundle;
 import android.webkit.*;
 import androidx.appcompat.app.AppCompatActivity;
@@ -2175,7 +2154,7 @@ public class MainActivity extends AppCompatActivity {
 }""")
 
     # styles.xml & colors.xml
-    write("android-project/app/src/main/res/values/styles.xml", """<?xml version="1.0" encoding="utf-8"?>
+    save_file("android-project/app/src/main/res/values/styles.xml", """<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.SIMRK" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="android:statusBarColor">#020b14</item>
@@ -2184,31 +2163,15 @@ public class MainActivity extends AppCompatActivity {
     </style>
 </resources>""")
     
-    write("android-project/app/src/main/res/values/colors.xml", """<?xml version="1.0" encoding="utf-8"?>
+    save_file("android-project/app/src/main/res/values/colors.xml", """<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="primary">#06b6d4</color>
     <color name="secondary">#22d3ee</color>
     <color name="background">#020b14</color>
 </resources>""")
 
-def copy_web_files_to_assets():
-    """نسخ ملفات الموقع إلى مجلد assets للأندرويد"""
-    assets_dir = "android-project/app/src/main/assets/www"
-    os.makedirs(assets_dir, exist_ok=True)
-    web_files = [
-        "index.html", "auth.html", "profile.html", "upload.html",
-        "chat.html", "explore.html", "notifications.html", "settings.html",
-        "firebase-config.js"
-    ]
-    for file in web_files:
-        if os.path.exists(file):
-            shutil.copy(file, os.path.join(assets_dir, file))
-            print(f"  ✅ نسخ {file} → assets/www/")
-        else:
-            print(f"  ⚠️ لم يتم العثور على {file}")
-
 # ═══════════════════════════════════════════════════════════
-# 💎 MAIN
+# 💎 MAIN - إعداد الكود في الذاكرة فقط
 # ═══════════════════════════════════════════════════════════
 
 def main():
@@ -2218,54 +2181,48 @@ def main():
 ║  💎  SIMRK 2026 - CYAN LUXURY EDITION  ✨          ║
 ║     Ultimate Generator - 9 Files + APK                  ║
 ║                                                          ║
-║  ✨  Notifications + Compact Grid + Delete Videos     ║
-║  🎬  Video Scroll Animation (NEW!)                     ║
+║  ⚠️  الكود في الذاكرة فقط - لن يخلق أي ملفات!        ║
+║  📋 استخدم write_files() لإنشاء الملفات عند الحاجة      ║
 ║                                                          ║
 ╚══════════════════════════════════════════════════════════╝
     """)
     
-    section("BUILDING WEB FILES - إنشاء ملفات الويب")
+    section("BUILDING CODE IN MEMORY - تحضير الكود في الذاكرة")
     
-    write("firebase-config.js", build_config())
-    write("auth.html", build_auth())
-    write("index.html", build_index())
-    write("profile.html", build_profile())
-    write("upload.html", build_upload())
-    write("chat.html", build_chat())
-    write("explore.html", build_explore())
-    write("notifications.html", build_notifications())
-    write("settings.html", build_settings())
+    save_file("firebase-config.js", build_config())
+    save_file("auth.html", build_auth())
+    save_file("index.html", build_index())
+    save_file("profile.html", build_profile())
+    save_file("upload.html", build_upload())
+    save_file("chat.html", build_chat())
+    save_file("explore.html", build_explore())
+    save_file("notifications.html", build_notifications())
+    save_file("settings.html", build_settings())
     
-    section("BUILDING ANDROID PROJECT - إنشاء مشروع الأندرويد")
+    section("BUILDING ANDROID PROJECT - تجهيز مشروع الأندرويد")
     build_android_project()
-    copy_web_files_to_assets()
     
-    section("BUILDING GITHUB ACTIONS - إنشاء ملفات البناء التلقائي")
-    os.makedirs(".github/workflows", exist_ok=True)
-    write(".github/workflows/build-apk.yml", build_github_actions())
+    section("BUILDING GITHUB ACTIONS - تجهيز ملفات البناء التلقائي")
+    save_file(".github/workflows/build-apk.yml", build_github_actions())
     
     print(f"""
 {'='*60}
-  💎 BUILD COMPLETE - تم الإنشاء بنجاح! ✨
+  💎 CODE READY IN MEMORY - الكود جاهز في الذاكرة ✨
 {'='*60}
 
   📊 إحصائيات:
      • {TOTAL_LINES} إجمالي عدد الأسطر
      • 9 ملفات ويب + مشروع أندرويد + GitHub Actions
 
-  📁 الملفات:
-     1. firebase-config.js
-     2. auth.html
-     3. index.html (🎬 مع أنيميشن تمرير الفيديو الجديد!)
-     4. profile.html
-     5. upload.html
-     6. chat.html
-     7. explore.html
-     8. notifications.html
-     9. settings.html
-     📱 android-project/
-     ⚡ .github/workflows/build-apk.yml
-
+  ⚠️  لم يتم إنشاء أي ملفات على القرص!
+  
+  📝 لإنشاء الملفات، استخدم:
+     write_files_to_disk()
+     
+  📁 أو استخدم الوظائف الفردية:
+     print(build_index())  # لطباعة كود index.html
+     print(build_auth())   # لطباعة كود auth.html
+  
   🔑 بيانات الاتصال الجديدة:
      • Firebase: gsde-8561e
      • Cloudinary: dshgbhw4h / sf34_gn
@@ -2276,22 +2233,18 @@ def main():
      • اللون الثانوي: #22d3ee
      • الخلفية: #020b14
 
-  ✨ الميزات الجديدة:
-     • 🎬 أنيميشن الفيديو عند التمرير (opacity + translateY)
+  ✨ الميزات:
+     • 🎬 أنيميشن الفيديو عند التمرير
      • 💎 تصميم سماوي فاخر
      • 🔥 جميع البيانات الجديدة
 
-  🚀 خطوات النشر:
-     1. python scraper.py
-     2. git add . && git commit -m "SIMRK Cyan Luxury"
-     3. git tag v2.0.0
-     4. git push origin main && git push origin v2.0.0
-     5. انتظر GitHub Actions يبني الـ APK
-     6. حمل الـ APK من صفحة Releases
-
-  💎 SIMRK CYAN LUXURY READY! ✨
+  💎 SIMRK CYAN LUXURY READY IN MEMORY! ✨
 {'='*60}
     """)
+
+def write_files():
+    """إنشاء جميع الملفات على القرص"""
+    write_files_to_disk()
 
 if __name__ == "__main__":
     main()
